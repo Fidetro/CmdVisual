@@ -39,6 +39,10 @@ class ViewController: NSViewController {
                 if let url = openPanel.directoryURL {
                     let process = Process()
                     let outputPipe = Pipe()
+                    if url.path.contains(" ") {
+                        self.log(text: "文件夹路径不要带空格")
+                        return
+                    }
                     process.standardOutput = outputPipe
                     process.launchPath = "/bin/bash"
                     process.arguments = ["-c","cd \(url.path);ls;"]
