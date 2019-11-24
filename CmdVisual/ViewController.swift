@@ -30,7 +30,7 @@ class ViewController: NSViewController {
         guard let window = NSApp.mainWindow else {
             return
         }
-        openPanel.beginSheetModal(for: window) { (response) in
+        openPanel.beginSheetModal(for: window) { [weak self](response) in
             if response == .OK {
                 if var url = openPanel.directoryURL {
                     let process = Process()
