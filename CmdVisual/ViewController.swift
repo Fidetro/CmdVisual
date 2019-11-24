@@ -12,6 +12,7 @@ class ViewController: NSViewController {
     
     @IBOutlet weak var beforeTextField: NSTextField!
     @IBOutlet var logTextView: NSTextView!
+    @IBOutlet weak var videoRateTextField: NSTextField!
     @IBOutlet weak var afterTextField: NSTextField!
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,7 +41,12 @@ class ViewController: NSViewController {
                         let outputString = String(data: data, encoding: String.Encoding.utf8) ?? ""
                         if outputString != ""{
                             DispatchQueue.main.async(execute: {
-                                self?.ffmpeg(with: outputString.components(separatedBy: "\n"), path: url.path)
+                                let files = outputString.components(separatedBy: "\n")
+                                for file in files {
+                                    if file.contains(self?.beforeTextField.stringValue ?? "" ) {
+                                        self?.ffmpeg(with: file, path: url.path)
+                                    }
+                                }
                             })
                         }
                     }
@@ -58,47 +64,69 @@ class ViewController: NSViewController {
         
     }
     
-    func ffmpeg(with files: [String], path: String) {
-        var cmds = String()
+    func ffmpeg(with file: String, path: String) {
         
-        for file in files {
-            if file.contains(beforeTextField.stringValue) {
-                let newFile = file.replacingOccurrences(of: beforeTextField.stringValue, with: afterTextField.stringValue)
-                let cmd = "ffmpeg -i " + path.appending("/"+file) + " " + path.appending("/"+newFile) + ";"
-                cmds.append(cmd)
-            }
-        }
         let process = Process()
         let outputPipe = Pipe()
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: outputPipe.fileHandleForReading, queue: nil) { [weak self] (notification) in
-            let data = outputPipe.fileHandleForReading.availableData
-            self?.log(data: data)     
+        let errorPipe = Pipe()
+        let inputPipe = Pipe()
+        let newFile = file.replacingOccurrences(of: beforeTextField.stringValue, with: afterTextField.stringValue)
+
+        
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+        
+        errorPipe.fileHandleForReading.readabilityHandler = { handler in
+            let data = handler.availableData
+            self.log(data: data)
+        }
+        outputPipe.fileHandleForReading.readabilityHandler = { handler in
+            let data = handler.availableData
+            self.log(data: data)
         }
         
         process.standardOutput = outputPipe
+        process.standardInput = inputPipe
         process.launchPath = "/usr/local/bin/ffmpeg"
-//        process.arguments = ["-c",cmds]
-        process.arguments = ["-c","ffmpeg","-i",path.appending("/"+files.first!),path.appending("/"+"1.mp3;")]
-        process.launch()
-        process.waitUntilExit()
-        outputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+        
+        if var rate = Int(videoRateTextField.stringValue) {
+            if rate < 600 {
+                rate = 700
+            }
+            process.arguments = ["-i",path.appending("/"+file),"-b:v", "\(rate)k",path.appending("/new_"+newFile)]
+        }else{
+            process.arguments = ["-i",path.appending("/"+file),path.appending("/new_"+newFile)]
+        }
+        
+        
+        do{
+            try process.run()
+        }catch{
+            log(text: error.localizedDescription)
+        }
+        
     }
     
     
     func log(data: Data) {
         let output = data
         let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
-        
-        if outputString != ""{
-            DispatchQueue.main.async(execute: {
-                let previousOutput = self.logTextView.string
-                let nextOutput = previousOutput + "\n" + outputString
-                self.logTextView.string = nextOutput
-                let range = NSRange(location:nextOutput.count,length:0)
-                self.logTextView.scrollRangeToVisible(range)
-            })
-        }
+        log(text: outputString)
     }
+    
+    func log(text: String) {
+         let outputString = text
+         
+         if outputString != ""{
+             DispatchQueue.main.async(execute: {
+                 let previousOutput = self.logTextView.string
+                 let nextOutput = previousOutput + "\n" + outputString
+                 self.logTextView.string = nextOutput
+                 let range = NSRange(location:nextOutput.count,length:0)
+                 self.logTextView.scrollRangeToVisible(range)
+             })
+         }
+     }
     
     override var representedObject: Any? {
         didSet {

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15505"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -772,8 +773,21 @@
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FAk-7z-uSq">
+                                <rect key="frame" x="339" y="229" width="100" height="22"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="3kU-Q6-yLE"/>
+                                    <constraint firstAttribute="height" constant="22" id="Dz4-f5-MXV"/>
+                                </constraints>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="码率(k)" drawsBackground="YES" id="9LK-y0-ill">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                         <constraints>
+                            <constraint firstItem="FAk-7z-uSq" firstAttribute="centerY" secondItem="EfB-vi-w1u" secondAttribute="centerY" id="AmT-Qa-Iu7"/>
                             <constraint firstItem="hna-KE-ptu" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="20" id="IDv-n9-3v4"/>
                             <constraint firstItem="GFo-qR-GWp" firstAttribute="centerY" secondItem="hna-KE-ptu" secondAttribute="centerY" id="TbZ-qh-fTJ"/>
                             <constraint firstItem="hna-KE-ptu" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" id="VTm-zl-V2c"/>
@@ -781,6 +795,7 @@
                             <constraint firstItem="EfB-vi-w1u" firstAttribute="centerY" secondItem="GFo-qR-GWp" secondAttribute="centerY" id="eJL-Vu-zfL"/>
                             <constraint firstItem="EfB-vi-w1u" firstAttribute="leading" secondItem="GFo-qR-GWp" secondAttribute="trailing" constant="8" id="j77-en-lBc"/>
                             <constraint firstAttribute="trailing" secondItem="BwK-Au-MEk" secondAttribute="trailing" constant="20" id="kcW-TQ-RVP"/>
+                            <constraint firstItem="FAk-7z-uSq" firstAttribute="leading" secondItem="EfB-vi-w1u" secondAttribute="trailing" constant="8" id="lfG-jy-T1i"/>
                             <constraint firstItem="BwK-Au-MEk" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" id="nZl-t2-PII"/>
                             <constraint firstAttribute="bottom" secondItem="BwK-Au-MEk" secondAttribute="bottom" constant="20" id="rFA-GS-bnD"/>
                         </constraints>
@@ -789,6 +804,7 @@
                         <outlet property="afterTextField" destination="EfB-vi-w1u" id="Lod-Ng-d5c"/>
                         <outlet property="beforeTextField" destination="GFo-qR-GWp" id="VkC-ud-b16"/>
                         <outlet property="logTextView" destination="3Cp-Zc-cei" id="fSQ-ME-Acf"/>
+                        <outlet property="videoRateTextField" destination="FAk-7z-uSq" id="75v-ZW-Pah"/>
                     </connections>
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
