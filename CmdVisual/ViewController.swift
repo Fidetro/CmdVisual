@@ -21,8 +21,13 @@ class ViewController: NSViewController {
   
 
     @IBAction func selectFileDocAction(_ sender: NSButton) {
+        
+        guard beforeTextField.stringValue.contains(".") ||
+            afterTextField.stringValue.contains(".") else {
+                log(text: "输入正确的格式名")
+            return
+        }
         let openPanel = NSOpenPanel()
-    
         let dURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).last!
         openPanel.directoryURL = dURL
         openPanel.message = "选择路径"
@@ -32,7 +37,7 @@ class ViewController: NSViewController {
         }
         openPanel.beginSheetModal(for: window) { [weak self](response) in
             if response == .OK {
-                if var url = openPanel.directoryURL {
+                if let url = openPanel.directoryURL {
                     let process = Process()
                     let outputPipe = Pipe()
                     NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: outputPipe.fileHandleForReading, queue: nil) { [weak self] (notification) in
@@ -50,13 +55,24 @@ class ViewController: NSViewController {
                             })
                         }
                     }
-                    
                     process.standardOutput = outputPipe
                     process.launchPath = "/bin/bash"
                     process.arguments = ["-c","cd \(url.path);ls;"]
                     process.launch()
+                    let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
                     process.waitUntilExit()
-                    outputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+                    self.log(data: data)
+                    let outputString = String(data: data, encoding: String.Encoding.utf8) ?? ""
+                    if outputString != ""{
+                        DispatchQueue.main.async(execute: {
+                            let files = outputString.components(separatedBy: "\n")
+                            for file in files {
+                                if file.contains(self.beforeTextField.stringValue ) {
+                                    self.ffmpeg(with: file, path: url.path)
+                                }
+                            }                            
+                        })
+                    }
                 }
             }
         }
@@ -88,17 +104,7 @@ class ViewController: NSViewController {
         process.standardOutput = outputPipe
         process.standardInput = inputPipe
         process.launchPath = "/usr/local/bin/ffmpeg"
-        
-        if var rate = Int(videoRateTextField.stringValue) {
-            if rate < 600 {
-                rate = 700
-            }
-            process.arguments = ["-i",path.appending("/"+file),"-b:v", "\(rate)k",path.appending("/new_"+newFile)]
-        }else{
-            process.arguments = ["-i",path.appending("/"+file),path.appending("/new_"+newFile)]
-        }
-        
-        
+        process.arguments = ["-i",path.appending("/"+file),path.appending("/"+newFile)]
         do{
             try process.run()
         }catch{
@@ -115,18 +121,18 @@ class ViewController: NSViewController {
     }
     
     func log(text: String) {
-         let outputString = text
-         
-         if outputString != ""{
-             DispatchQueue.main.async(execute: {
-                 let previousOutput = self.logTextView.string
-                 let nextOutput = previousOutput + "\n" + outputString
-                 self.logTextView.string = nextOutput
-                 let range = NSRange(location:nextOutput.count,length:0)
-                 self.logTextView.scrollRangeToVisible(range)
-             })
-         }
-     }
+        let outputString = text
+        
+        if outputString != ""{
+            DispatchQueue.main.async(execute: {
+                let previousOutput = self.logTextView.string
+                let nextOutput = previousOutput + "\n" + outputString
+                self.logTextView.string = nextOutput
+                let range = NSRange(location:nextOutput.count,length:0)
+                self.logTextView.scrollRangeToVisible(range)
+            })
+        }
+    }
     
     override var representedObject: Any? {
         didSet {
