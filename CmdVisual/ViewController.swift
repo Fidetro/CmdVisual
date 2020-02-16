@@ -61,14 +61,16 @@ class ViewController: NSViewController {
                     process.launch()
                     let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
                     process.waitUntilExit()
-                    self.log(data: data)
+                    self?.log(data: data)
                     let outputString = String(data: data, encoding: String.Encoding.utf8) ?? ""
                     if outputString != ""{
                         DispatchQueue.main.async(execute: {
                             let files = outputString.components(separatedBy: "\n")
                             for file in files {
-                                if file.contains(self.beforeTextField.stringValue ) {
-                                    self.ffmpeg(with: file, path: url.path)
+                                if let str = self?.beforeTextField.stringValue {
+                                    if file.contains(str) {
+                                        self?.ffmpeg(with: file, path: url.path)
+                                    }
                                 }
                             }                            
                         })
@@ -104,7 +106,17 @@ class ViewController: NSViewController {
         process.standardOutput = outputPipe
         process.standardInput = inputPipe
         process.launchPath = "/usr/local/bin/ffmpeg"
-        process.arguments = ["-i",path.appending("/"+file),path.appending("/"+newFile)]
+        
+        if var rate = Int(videoRateTextField.stringValue) {
+            if rate < 600 {
+                rate = 700
+            }
+            process.arguments = ["-i",path.appending("/"+file),"-b:v", "\(rate)k",path.appending("/new_"+newFile)]
+        }else{
+            process.arguments = ["-i",path.appending("/"+file),path.appending("/new_"+newFile)]
+        }
+        
+        
         do{
             try process.run()
         }catch{
