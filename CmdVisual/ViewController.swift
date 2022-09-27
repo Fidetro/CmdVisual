@@ -111,6 +111,10 @@ class ViewController: NSViewController {
             if rate < 600 {
                 rate = 700
             }
+            //音频压缩
+            //process.arguments = ["-i",path.appending("/"+file),"-codec:a","libmp3lame","-b:a", "\(rate)k",path.appending("/new_"+newFile)]
+
+            
             process.arguments = ["-i",path.appending("/"+file),"-b:v", "\(rate)k",path.appending("/new_"+newFile)]
         }else{
             process.arguments = ["-i",path.appending("/"+file),path.appending("/new_"+newFile)]
